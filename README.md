@@ -1,6 +1,6 @@
 # LLVM HW
 
-Basing on llvm-pass-skeleton code.
+Basing on [llvm-pass-skeleton](https://github.com/sampsyo/llvm-pass-skeleton) code.
 
 Build:
 
