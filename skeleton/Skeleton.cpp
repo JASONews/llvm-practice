@@ -10,6 +10,7 @@
 using namespace llvm;
 
 namespace {
+
   struct SkeletonPass : public FunctionPass {
     static char ID;
     SkeletonPass() : FunctionPass(ID) {}
@@ -32,15 +33,15 @@ namespace {
             
             IRBuilder<> builder(op);
 
-            // Value* lhs = op->getOperand(0);
-            // Value* rhs = op->getOperand(1);
-            // Value* mul = builder.CreateMul(lhs, rhs);
+            Value* lhs = op->getOperand(0);
+            Value* rhs = op->getOperand(1);
+            Value* mul = builder.CreateMul(lhs, rhs);
 
-            // for (auto& use : op->uses()) {
+            for (auto& use : op->uses()) {
 
-            //   User* user = use.getUser();
-            //   user->setOperand(use.getOperandNo(), mul);
-            // }
+              User* user = use.getUser();
+              user->setOperand(use.getOperandNo(), mul);
+            }
 
             builder.SetInsertPoint(&B, ++builder.GetInsertPoint());
 
