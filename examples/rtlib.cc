@@ -2,7 +2,7 @@
 
 using namespace std;
 
-extern "C" void logop(int32_t val)
+extern "C" void logdiv(int32_t lineno)
 {
-    cout << val << endl;
+    cout << "Float div called at line " << lineno << endl;
 }

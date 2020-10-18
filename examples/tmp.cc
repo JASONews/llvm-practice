@@ -6,6 +6,7 @@ int main(int argc, char **argv)
 {
 	int x = 20;
 	int y = x + 5;
-	cout << y << endl;
+	float c = x / 1.2 + y;
+	cout << c / 0.1 << endl;
 	return 0;
 }

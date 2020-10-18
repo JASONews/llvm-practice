@@ -6,6 +6,11 @@
 #include "llvm/IR/InstrTypes.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Instruction.h"
+#include <llvm/IR/DebugLoc.h>
+#include <llvm/IR/DebugInfoMetadata.h>
+
+#include <string>
 
 using namespace llvm;
 
@@ -16,12 +21,13 @@ namespace {
     SkeletonPass() : FunctionPass(ID) {}
 
     virtual bool runOnFunction(Function &F) {
-      // errs() << "I saw a function called " << F.getName() << "!\n";
 
       LLVMContext& context = F.getContext();
       auto logFunc = F.getParent()->getOrInsertFunction(
-        "logop", Type::getVoidTy(context), Type::getInt32Ty(context)
+        "logdiv", Type::getVoidTy(context), Type::getInt32Ty(context)
       );
+
+      bool ret = false;
 
       for (auto& B : F)
       {
@@ -29,31 +35,42 @@ namespace {
         {
           if (auto* op = dyn_cast<BinaryOperator>(&I)) {
 
-            errs() << "I saw a function called " << F.getName() << "!\n";
-            
             IRBuilder<> builder(op);
 
-            Value* lhs = op->getOperand(0);
-            Value* rhs = op->getOperand(1);
-            Value* mul = builder.CreateMul(lhs, rhs);
+            if (op->getOpcode() == Instruction::FDiv) {
 
-            for (auto& use : op->uses()) {
+              const DebugLoc &debugInfo = I.getDebugLoc();
 
-              User* user = use.getUser();
-              user->setOperand(use.getOperandNo(), mul);
+              std::string info = "Floating Point DIV at line ";
+              errs() << info << debugInfo.getLine() << "\n";
+
+              auto* left = ConstantInt::get(Type::getInt32Ty(context), 0);
+              auto* right = ConstantInt::get(Type::getInt32Ty(context), debugInfo.getLine());
+              auto* val = builder.CreateAdd(left, right, "linnum");
+
+              builder.SetInsertPoint(&B, ++builder.GetInsertPoint());
+
+              Value* args = {val};
+              builder.CreateCall(logFunc, args);
+
+              ret = true;
             }
 
-            builder.SetInsertPoint(&B, ++builder.GetInsertPoint());
+            // Value* lhs = op->getOperand(0);
+            // Value* rhs = op->getOperand(1);
+            // Value* mul = builder.CreateMul(lhs, rhs);
 
-            Value* args = {op};
+            // for (auto& use : op->uses()) {
 
-            builder.CreateCall(logFunc, args);
-            return true;
+            //   User* user = use.getUser();
+            //   user->setOperand(use.getOperandNo(), mul);
+            // }
+
           }
         }
       }
 
-      return false;
+      return ret;
     }
   };
 }
